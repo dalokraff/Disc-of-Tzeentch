@@ -357,7 +357,8 @@ InteractionDefinitions.mount_interaction.client.stop = function (world, interact
 end
 
 InteractionDefinitions.mount_interaction.client.hud_description = function (interactable_unit, data, config, fail_reason, interactor_unit)
-	return Unit.get_data(interactable_unit, "interaction_data", "hud_description"), "Mount"
+	--return Unit.get_data(interactable_unit, "interaction_data", "hud_description"), mod:localize("mod_interaction")
+    return mod:localize("disc_name"), mod:localize("interaction")
 end
 
 
