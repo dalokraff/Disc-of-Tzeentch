@@ -1,0 +1,9 @@
+bones = "units/disc_tzeentch/disc"
+tolerance = {
+	"" = [
+		0.01
+		0.01
+		false
+		false
+	]
+}

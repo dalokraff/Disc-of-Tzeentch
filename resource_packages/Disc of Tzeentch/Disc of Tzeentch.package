@@ -1,0 +1,23 @@
+mod = [
+	"Disc of Tzeentch"
+]
+
+package = [
+	"resource_packages/Disc of Tzeentch/Disc of Tzeentch"
+]
+
+lua = [
+	"scripts/mods/Disc of Tzeentch/*"
+]
+
+unit = [
+  "units/*"
+]
+
+material = [
+  "materials/*"
+]  
+
+texture = [
+  "textures/*"
+] 

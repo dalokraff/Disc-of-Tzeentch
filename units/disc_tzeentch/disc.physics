@@ -1,0 +1,17 @@
+actors = [
+	{
+		enabled = true
+		mass = 1
+		name = "pCylinder1"
+		node = "pCylinder1"
+		shapes = [
+			{
+				material = "default"
+				shape = "pCylinder1"
+				template = "default"
+				type = "convex_computed"
+			}
+		]
+		template = "static"
+	}
+]
