@@ -5,6 +5,7 @@ mod:network_register("rpc_request_mount_snyc", function(sender)
     mod.player_hot_join = true
 end)
 
+--syncs the currently spawned in disc units with the host when a client hot joins
 mod:network_register("rpc_snyc_mounts", function(sender, list_mount, unitPos)
     if mod.mounted_players ~= list_mount then 
         local package_name = "units/disc_tzeentch/disc"
@@ -50,6 +51,7 @@ mod:network_register("rpc_spawn_mount", function(sender, posList, rotList, unit_
     mod:echo(sender)
 end)
 
+--adds or removes a rider(player) when then mount or dismount (interact with) from the disc
 mod:network_register("rpc_add_rider", function(sender, new_rider, mount_marker)
     local mount_table = {
         rider = new_rider

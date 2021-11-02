@@ -1,5 +1,6 @@
 --mod:dofile("scripts/mods/Disc of Tzeentch/utils/disc_buff")
 local mod = get_mod("Disc of Tzeentch")
+mod:dofile("scripts/mods/Disc of Tzeentch/hooks")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/unit")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/strManip")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/InputHandler")
@@ -36,9 +37,10 @@ math.randomseed(1)
 
 function mod.update()
         if mod.mounted_players[1] ~= nil then
+            
+            --checks for when a player hot joins and then preps the unit_pos_list needed to be sent for snyc disc loactions with an rpc
             local world = Managers.world:world("level_world")
             if  mod.player_hot_join and Managers.player:local_player().is_server then
-                
                 local list_of_mounts_in_world = World.units_by_resource(world, "units/disc_tzeentch/disc")
                 local unit_pos_list = {}
                 for _,v in pairs(list_of_mounts_in_world) do
@@ -61,7 +63,6 @@ function mod.update()
                         end
                     end
                 end
-                
                 mod:network_send("rpc_snyc_mounts","others", mod.mounted_players, unit_pos_list)
                 mod.player_hot_join = false
             end
@@ -69,52 +70,6 @@ function mod.update()
             mod.drag_unit(world)
         end    
 end
-
-mod:hook(PackageManager, "load",
-         function(func, self, package_name, reference_name, callback,
-                  asynchronous, prioritize)
-    if package_name ~= "units/disc_tzeentch/disc" then
-        func(self, package_name, reference_name, callback, asynchronous,
-             prioritize)
-    end
-	
-end)
-mod:hook(PackageManager, "unload",
-         function(func, self, package_name, reference_name)
-    if  package_name ~= "units/disc_tzeentch/disc" then
-        func(self, package_name, reference_name)
-    end
-	
-end)
-mod:hook(PackageManager, "has_loaded",
-         function(func, self, package, reference_name)
-    if package == "units/disc_tzeentch/disc" then
-        return true
-    end
-	
-    return func(self, package, reference_name)
-end)
-
-mod:hook(LocalizationManager, "_base_lookup", function (func, self, text_id)
-    if not string.find(mod:localize(text_id), "<") then
-        return mod:localize(text_id)
-    end
-    
-	return func(self, text_id)
-end)
-
-mod:hook(LevelTransitionHandler, "load_current_level", function(func, self)
-    for k,v in pairs(mod.mounted_players) do 
-        table.remove(mod.mounted_players, k)
-    end
-    return func(self)
-end)
-
-
-mod:hook(GameModeManager, "rpc_to_client_spawn_player", function (func, self, channel_id, local_player_id, profile_index, career_index, position, rotation, is_initial_spawn)
-    mod:network_send("rpc_request_mount_snyc", "others")
-    return func(self, channel_id, local_player_id, profile_index, career_index, position, rotation, is_initial_spawn)
-end)
 
 --defines the custom buff that is applied while riding the disc
 local test_buff_templates = {
@@ -157,106 +112,6 @@ local unit_templates_to_add = {
     }
 }
 
-local unit_templates = require("scripts/network/unit_extension_templates")
-
-table.merge(unit_templates, unit_templates_to_add)
-
-mod:hook(unit_templates, "get_extensions", function (func, unit_template_name, is_husk, is_server)
-    local extensions, num_extensions = nil
-	local template = unit_templates[unit_template_name]
-
-	if is_husk then
-		if is_server and template.husk_extensions_server then
-			num_extensions = template.num_husk_extensions_server
-			extensions = template.husk_extensions_server
-		else
-			num_extensions = template.num_husk_extensions
-			extensions = template.husk_extensions
-		end
-	elseif is_server and template.self_owned_extensions_server then
-		num_extensions = template.num_self_owned_extensions_server
-		extensions = template.self_owned_extensions_server
-	else
-		num_extensions = template.num_self_owned_extensions
-		extensions = template.self_owned_extensions
-	end
-
-	return extensions, num_extensions
-end)
-
-mod:hook(unit_templates, "extensions_to_remove_on_death", function (func, unit_template_name, is_husk, is_server)
-    local extensions, num_extensions = nil
-	local remove_when_killed = unit_templates[unit_template_name].remove_when_killed
-
-	if remove_when_killed == nil then
-		return nil
-	end
-
-	if is_husk then
-		if is_server and remove_when_killed.husk_extensions_server then
-			num_extensions = remove_when_killed.num_husk_extensions_server
-			extensions = remove_when_killed.husk_extensions_server
-		else
-			num_extensions = remove_when_killed.num_husk_extensions
-			extensions = remove_when_killed.husk_extensions
-		end
-	elseif is_server and remove_when_killed.self_owned_extensions_server then
-		num_extensions = remove_when_killed.num_self_owned_extensions_server
-		extensions = remove_when_killed.self_owned_extensions_server
-	else
-		num_extensions = remove_when_killed.num_self_owned_extensions
-		extensions = remove_when_killed.self_owned_extensions
-	end
-
-	return extensions, num_extensions
-end)
-
-
-mod:hook(ScriptUnit, "extension", function(func, unit_1, system_name)
-    local Entities = rawget(_G, "G_Entities")
-
-    local unit_extensions = Entities[unit_1]
-	local extension = unit_extensions and unit_extensions[system_name]
-
-    if extension == nil then 
-        extension = {
-            _is_level_object = false,
-            unit = unit_1,
-            num_times_successfully_completed = 0,
-            interactable_type = "mount_interaction",
-            interaction_result = "2",
-            _enabled = true
-        }
-        extension.destroy = function (self)
-            return
-        end
-        extension.interaction_type = function (self)
-            return self.interactable_type
-        end
-        extension.set_is_being_interacted_with = function (self, interactor_unit, interaction_result)
-            local unit = self.unit
-            local interaction_type = self.interactable_type
-            self.interactor_unit = interactor_unit
-            self.interaction_result = interaction_result
-            mod:echo(interactor_unit)
-        end
-        extension.is_being_interacted_with = function (self)
-            return self.interactor_unit
-        end
-        extension.is_enabled = function (self)
-            return self._enabled
-        end
-        extension.set_enabled = function (self, enabled)
-            self._enabled = enabled
-        end
-
-    end
-
-	return extension
-end)
-
-
-
 function mod.spawn_network_package()
     local player = Managers.player:local_player()
     local player_unit = player.player_unit
@@ -266,7 +121,7 @@ function mod.spawn_network_package()
     local x,y,z,w = Quaternion.to_elements(rotation)
     local rotList = { x,y,z,w }
     local unit_marker = math.random(10000)
-
+    --in lieu of using a proper go_id each disc unit is given a unit_marker
     mod:network_send("rpc_spawn_mount","all", posList, rotList, unit_marker)
     
     mod:echo('++++')
@@ -283,6 +138,7 @@ mod:command("disc_net", "", function()
     mod:echo('spawned')
 end)
 
+--adds the 
 SpawnUnitTemplates = SpawnUnitTemplates or {}
 SpawnUnitTemplates.disc_unit = {
     spawn_func = function (source_unit, position, rotation)
@@ -334,6 +190,7 @@ InteractionDefinitions.mount_interaction.client.stop = function (world, interact
             local currentRider = player:network_id()
             local currentMount = Unit.get_data(interactable_unit, "unit_marker")
 
+            --determines if the buff needs to be removed from the rider
             if Unit.get_data(interactable_unit, "current_rider") == currentRider then 
                 local buff_to_remove = Unit.get_data(interactable_unit, "interaction_data", "apply_buff")
                 local buff_extension = ScriptUnit.extension(interactor_unit, "buff_system")
@@ -341,6 +198,7 @@ InteractionDefinitions.mount_interaction.client.stop = function (world, interact
                 buff_extension:remove_buff(active_buff.id)                
             end
 
+            --preps data to be sent over with rpc 
             local disc_pos = Unit.local_position(interactable_unit, 0)
             local zilch = Vector3.zero()
             Vector3.set_z(zilch, 0.3)
@@ -349,11 +207,8 @@ InteractionDefinitions.mount_interaction.client.stop = function (world, interact
             
             mod:echo(Unit.get_data(interactable_unit, "current_rider"))
             if Unit.get_data(interactable_unit, "current_rider") == "no_one" then
-                --Unit.set_data(interactable_unit, "current_rider", currentRider)
                 mod:network_send("rpc_add_rider","all", currentRider, currentMount)
-                
             else
-                --Unit.set_data(interactable_unit, "current_rider", "no_one")
                 mod:network_send("rpc_remove_rider","all", currentRider, currentMount)
             end
             mod:echo(Unit.get_data(interactable_unit, "current_rider"))
@@ -365,7 +220,6 @@ InteractionDefinitions.mount_interaction.client.stop = function (world, interact
 end
 
 InteractionDefinitions.mount_interaction.client.hud_description = function (interactable_unit, data, config, fail_reason, interactor_unit)
-	--return Unit.get_data(interactable_unit, "interaction_data", "hud_description"), mod:localize("mod_interaction")
     return "disc_name", "disc_interaction"
 end
 
