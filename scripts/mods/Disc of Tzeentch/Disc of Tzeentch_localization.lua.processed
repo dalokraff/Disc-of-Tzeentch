@@ -2,16 +2,16 @@ return {
 	mod_description = {
 		en = "Disc of Tzeentch description",
 	},
-	disc_interaction = {
+	interaction = {
 		en = "Mount",
-		de = "Bestieg",
+		de = "Bestieg"
 	},
 	disc_name = {
 		en = "Disc of Tzeentch",
-		de = "Scheibe von Tzeentch",
-	},
+		de = "Scheibe von Tzeentch"
+	}
 	description = {
 		en = "Ride the Winds of Magic in style, with a Daemon of Tzeentch.",
-		de = "Fahren die Winde von Zauber mit einem Dämon von Tzeentch.",
-	},
+		de = "Fahren die Winde von Zauber mit einem Dämon von Tzeentch."
+	}
 }

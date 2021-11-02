@@ -95,6 +95,14 @@ mod:hook(PackageManager, "has_loaded",
     return func(self, package, reference_name)
 end)
 
+mod:hook(LocalizationManager, "_base_lookup", function (func, self, text_id)
+    if not string.find(mod:localize(text_id), "<") then
+        return mod:localize(text_id)
+    end
+    
+	return func(self, text_id)
+end)
+
 mod:hook(LevelTransitionHandler, "load_current_level", function(func, self)
     for k,v in pairs(mod.mounted_players) do 
         table.remove(mod.mounted_players, k)
@@ -358,7 +366,7 @@ end
 
 InteractionDefinitions.mount_interaction.client.hud_description = function (interactable_unit, data, config, fail_reason, interactor_unit)
 	--return Unit.get_data(interactable_unit, "interaction_data", "hud_description"), mod:localize("mod_interaction")
-    return mod:localize("disc_name"), mod:localize("interaction")
+    return "disc_name", "disc_interaction"
 end
 
 

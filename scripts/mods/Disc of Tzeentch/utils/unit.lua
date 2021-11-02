@@ -31,14 +31,6 @@ end
 function mod.drag_unit(world)    
     
     local calvary = mod.mounted_players
-    
-    -- for k,v in pairs(mod.mounted_players) do 
-    --     mod:echo(k)
-    --     for i,j in pairs(v) do
-    --         mod:echo(i)
-    --         mod:echo(j)
-    --     end
-    -- end
 
     for k,v in pairs(calvary) do 
         --local list_of_mounts_in_world = World.unit_by_name(world, v.mount)
