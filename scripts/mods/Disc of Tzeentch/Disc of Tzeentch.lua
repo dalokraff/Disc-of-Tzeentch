@@ -2,7 +2,7 @@
 local mod = get_mod("Disc of Tzeentch")
 mod:dofile("scripts/mods/Disc of Tzeentch/hooks")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/unit")
-mod:dofile("scripts/mods/Disc of Tzeentch/utils/strManip")
+--mod:dofile("scripts/mods/Disc of Tzeentch/utils/strManip")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/InputHandler")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/mod_rpcs")
 mod:dofile("scripts/mods/Disc of Tzeentch/utils/network_tables")
@@ -13,10 +13,6 @@ mod:dofile("scripts/mods/Disc of Tzeentch/utils/network_tables")
 --directional states when on disc
 mod.down = false
 mod.up = true
-mod.left = false
-mod.richt = false
-mod.forward = false
-mod.backward = false
 
 mod.ascend = function()
     mod.up = not mod.up
@@ -28,7 +24,6 @@ end
 
 --table for keepign track of disc-rider pairs
 mod.mounted_players = {}
-mod.mount_velocity = {}
 
 mod.player_hot_join = false
 
@@ -45,20 +40,12 @@ function mod.update()
 
     --checks for when a player hot joins and then preps the unit_pos_list needed to be sent for snyc disc loactions with an rpc
     if  mod.player_hot_join then
-        --mod:echo('hallo')
         local world = Managers.world:world("level_world")
         if Managers.player:local_player().is_server then
             local list_of_mounts_in_world = World.units_by_resource(world, "units/disc_tzeentch/disc")
-            --mod:echo(list_of_mounts_in_world)
-            for k,v in pairs(list_of_mounts_in_world) do 
-                --mod:echo(k)
-                --mod:echo(v)
-            end
             local unit_pos_list = {}
             for _,v in pairs(list_of_mounts_in_world) do
-                --mod:echo(v)
                 if Unit.get_data(v, "current_rider") == "no_one" then 
-                    --mod:echo('it')
                     local unitPos = Unit.local_position(v, 0)
                     local unitRot = Unit.local_rotation(v, 0)
                     local Xx,Yy,Zz,Ww = Quaternion.to_elements(unitRot)
@@ -73,9 +60,7 @@ function mod.update()
                         w1 = Ww,
                         unit_marker = Unit.get_data(v, "unit_marker")
                     }
-                    --mod:echo("pos unit list in")
                 else 
-                    --mod:echo('that')
                     for _,j in pairs(mod.mounted_players) do
                         --if Unit.get_data(v, "current_rider") == j.rider then
                             local unitPos = Unit.local_position(v, 0)
@@ -96,7 +81,6 @@ function mod.update()
                     end
                 end
             end
-            --mod:echo('mit')
             if mod.mounted_players[1] == nil then
                 local empty_tab = {
                     empty = {
@@ -104,24 +88,10 @@ function mod.update()
                     }
                 }
                 mod:network_send("rpc_snyc_mounts","others", empty_tab, unit_pos_list)
-                for k,v in pairs(unit_pos_list) do 
-                    --mod:echo(k)
-                    for i,j in pairs(v) do 
-                        --mod:echo(i)
-                        --mod:echo(j)
-                    end
-                end
-                --mod:echo('empty')
             else
                 mod:network_send("rpc_snyc_mounts","others", mod.mounted_players, unit_pos_list)
-                --mod:echo('full')
-            end
-            for k,v in pairs(unit_pos_list) do 
-                --mod:echo(k)
-                --mod:echo(v)
             end
             mod.player_hot_join = false
-            --mod:echo('tschuss')
         end
     end
 
@@ -159,14 +129,6 @@ function mod.spawn_network_package()
     local unit_marker = math.random(10000)
     --in lieu of using a proper go_id each disc unit is given a unit_marker
     mod:network_send("rpc_spawn_mount","all", posList, rotList, unit_marker)
-    
-    --mod:echo('++++')
-    for k,v in pairs(Managers.player._players_by_peer) do
-        --mod:echo(k)
-        --mod:echo(v)
-    end
-    --mod:echo('++++')
-    --mod:echo(player:network_id())
 end
 
 mod:command("spawn_disc", "", function() 
@@ -260,13 +222,12 @@ InteractionDefinitions.mount_interaction.client.stop = function (world, interact
             disc_pos = disc_pos + zilch
             Unit.set_local_position(interactor_unit, 0, disc_pos)
             
-            --mod:echo(Unit.get_data(interactable_unit, "current_rider"))
+            
             if Unit.get_data(interactable_unit, "current_rider") == "no_one" then
                 mod:network_send("rpc_add_rider","all", currentRider, currentMount)
             else
                 mod:network_send("rpc_remove_rider","all", currentRider, currentMount)
             end
-            --mod:echo(Unit.get_data(interactable_unit, "current_rider"))
         end
 
 	end

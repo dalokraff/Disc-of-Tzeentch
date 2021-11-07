@@ -2,48 +2,26 @@ local mod = get_mod("Disc of Tzeentch")
 
 --this funciton is for calculating the disc tilt
 local function calculate_rotation(player_rot, new_pos, old_pos)
-    --local pos_delta = new_pos - old_pos
     local root2 = math.sqrt(2)
     local target_rot1 = Quaternion.from_elements(0,0,0,1)
     local target_rot2 = Quaternion.from_elements(0,0,0,1)
 
-    --Vector3.set_z(new_pos, 0)
-    --Vector3.set_z(old_pos, 0)
     local pos_delta = Quaternion.rotate(player_rot:unbox(), new_pos) - Quaternion.rotate(player_rot:unbox(), old_pos)
     Vector3.set_z(pos_delta, 0)
     local pos_mag = Vector3.length(pos_delta)
     local w = 1
-    -- if mod.forward then 
-    --     w = -math.cos(math.pi/18)
-    -- end
-    -- if mod.richt then 
-    --     w = -math.cos(math.pi/18)
-    -- end
-    -- if mod.left then 
-    --     w = -math.cos(math.pi/18)
-    -- end
-    -- if mod.backward then 
-    --     if w ~= 1 then
-    --         w = -w
-    --     else
-    --         w = math.cos(math.pi/18)
-    --     end
-    -- end
-
+    
     if pos_mag > 0.057 then 
         w = -math.cos(math.pi/18)
     elseif pos_mag > 0.01 then
         w = math.cos(math.pi/18)
     end
 
-
     z = math.sqrt(1-math.abs(w))
     Quaternion.set_xyzw(target_rot1 ,z,0,0,w)
 
     local new_rotation1 = Quaternion.multiply(player_rot:unbox(), target_rot1)
     local flip_rot = Quaternion.multiply(new_rotation1, Quaternion.from_elements(0,0,1,0))
-
-    ----mod:echo(Vector3.length(pos_delta))
 
     return flip_rot
 end
@@ -103,7 +81,6 @@ function mod.drag_unit(world)
                         local old_pos = Unit.local_position(unit, 0)
                         Unit.set_local_rotation(unit, 0, Quaternion.normalize(calculate_rotation(player_rot, new_position, old_pos)))
                         Unit.set_local_position(unit, 0, new_position)
-                        --Unit.set_local_rotation(unit, 0, player_rot:unbox())
 
                         -- Force the physics to update
                         Unit.disable_physics(unit)

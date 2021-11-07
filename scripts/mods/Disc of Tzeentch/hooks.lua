@@ -90,7 +90,6 @@ mod:hook(ScriptUnit, "extension", function(func, unit_1, system_name)
             local interaction_type = self.interactable_type
             self.interactor_unit = interactor_unit
             self.interaction_result = interaction_result
-            --mod:echo(interactor_unit)
         end
         extension.is_being_interacted_with = function (self)
             return self.interactor_unit
@@ -100,11 +99,8 @@ mod:hook(ScriptUnit, "extension", function(func, unit_1, system_name)
         end
         extension.set_enabled = function (self, enabled)
             self._enabled = enabled
-        end
-        --mod:echo("inside")
-        
+        end        
     end
-    ----mod:echo("outside")
 	return extension
 end)
 
