@@ -1,30 +1,51 @@
 local mod = get_mod("Disc of Tzeentch")
 
---this funciton is for calculating the disc tilt, the quaternions for left rigth tilt aren't in the player's reference frame currently
-local function calculate_rotation(look_delta)
-    local iR,jR,kR = Quaternion.to_euler_angles_xyz(look_delta:unbox())
-    local original_rotation = Quaternion.from_euler_angles_xyz(iR,jR,kR)
-  
-    local target_rot1 = Quaternion.from_euler_angles_xyz(0,0,0)
-    if mod.forward then 
-        target_rot1 = Quaternion.from_euler_angles_xyz(20,0,0)
-    end
-    if mod.backward then 
-        target_rot1 = Quaternion.from_euler_angles_xyz(-20,0,0)
+--this funciton is for calculating the disc tilt
+local function calculate_rotation(player_rot, new_pos, old_pos)
+    --local pos_delta = new_pos - old_pos
+    local root2 = math.sqrt(2)
+    local target_rot1 = Quaternion.from_elements(0,0,0,1)
+    local target_rot2 = Quaternion.from_elements(0,0,0,1)
+
+    --Vector3.set_z(new_pos, 0)
+    --Vector3.set_z(old_pos, 0)
+    local pos_delta = Quaternion.rotate(player_rot:unbox(), new_pos) - Quaternion.rotate(player_rot:unbox(), old_pos)
+    Vector3.set_z(pos_delta, 0)
+    local pos_mag = Vector3.length(pos_delta)
+    local w = 1
+    -- if mod.forward then 
+    --     w = -math.cos(math.pi/18)
+    -- end
+    -- if mod.richt then 
+    --     w = -math.cos(math.pi/18)
+    -- end
+    -- if mod.left then 
+    --     w = -math.cos(math.pi/18)
+    -- end
+    -- if mod.backward then 
+    --     if w ~= 1 then
+    --         w = -w
+    --     else
+    --         w = math.cos(math.pi/18)
+    --     end
+    -- end
+
+    if pos_mag > 0.057 then 
+        w = -math.cos(math.pi/18)
+    elseif pos_mag > 0.01 then
+        w = math.cos(math.pi/18)
     end
 
-    local target_rot2 = Quaternion.from_euler_angles_xyz(0,0,0)
-    if mod.richt then 
-        target_rot2 = Quaternion.from_euler_angles_xyz(0,20,0)
-    end
-    if mod.left then 
-        target_rot2 = Quaternion.from_euler_angles_xyz(0,-20,0)
-    end
 
-    local new_rotation1 = Quaternion.multiply(Quaternion.conjugate(original_rotation), target_rot1)
-    local new_rotation2 = Quaternion.multiply(Quaternion.conjugate(original_rotation), target_rot2)
+    z = math.sqrt(1-math.abs(w))
+    Quaternion.set_xyzw(target_rot1 ,z,0,0,w)
 
-    return Quaternion.conjugate(Quaternion.multiply(new_rotation1, new_rotation2))
+    local new_rotation1 = Quaternion.multiply(player_rot:unbox(), target_rot1)
+    local flip_rot = Quaternion.multiply(new_rotation1, Quaternion.from_elements(0,0,1,0))
+
+    ----mod:echo(Vector3.length(pos_delta))
+
+    return flip_rot
 end
 
 --this is the a modified drag function from UnitExplorer and sets the position and rotation of the disc relatvie to the player 
@@ -49,7 +70,6 @@ function mod.drag_unit(world)
 
                 if Unit.alive(unit) then 
                     local player_pos = Unit.local_position(player_unit, 0)
-                    
                     --this is *the true* local player
                     local new_position = player_pos
                     local player = Managers.player:local_player()
@@ -65,13 +85,14 @@ function mod.drag_unit(world)
                         end 
                         if mod.up then
                             local zilch = Vector3.zero()
-                            --Vector3.set_z(zilch, 0.1)
-                            Vector3.set_z(zilch, 0.2)
+                            Vector3.set_z(zilch, 0.1)
+                            --Vector3.set_z(zilch, 0.2)
                             new_position = player_pos + zilch 
                         elseif not mod.down then
                             local zilch = Vector3.zero()
                             --Vector3.set_z(zilch, 0.0265)
-                            Vector3.set_z(zilch, 0.119)
+                            --Vector3.set_z(zilch, 0.119)
+                            Vector3.set_z(zilch, 0.0265)
                             new_position = player_pos + zilch
                         end
                     end
@@ -79,13 +100,16 @@ function mod.drag_unit(world)
                     local player_rot = QuaternionBox(Unit.local_rotation(player_unit, 0))
 
                     if Unit.alive(unit) and new_position then 
+                        local old_pos = Unit.local_position(unit, 0)
+                        Unit.set_local_rotation(unit, 0, Quaternion.normalize(calculate_rotation(player_rot, new_position, old_pos)))
                         Unit.set_local_position(unit, 0, new_position)
-                    
-                        Unit.set_local_rotation(unit, 0, Quaternion.normalize(calculate_rotation(player_rot)))
+                        --Unit.set_local_rotation(unit, 0, player_rot:unbox())
 
                         -- Force the physics to update
                         Unit.disable_physics(unit)
                         Unit.enable_physics(unit)
+
+                        
                     end
                 end
             end

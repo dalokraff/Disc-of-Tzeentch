@@ -1,0 +1,53 @@
+parent_material = "materials/eye_emissive_3p"
+textures = {
+	color_map = "textures/eye_color",
+	roughness_map = "textures/eye_height",
+	normal_map = "textures/eye_normal",
+	metallic_map = "textures/eye_metallic",
+	emissive_map = "textures/eye_color"
+}
+material_contexts = {
+	surface_material = ""
+}
+variables = {
+	base_color = {
+		type = "vector3"
+		value = [
+			0
+			0
+			0
+		]
+	}
+	emissive = {
+		type = "vector3"
+		value = [
+			0.01
+			0.01
+			0.01
+		]
+	}
+	use_ao_map = {
+		type = "scalar"
+		value = 0
+	}
+	use_color_map = {
+		type = "scalar"
+		value = 1
+	}
+	use_emissive_map = {
+		type = "scalar"
+		value = 0
+	}
+	use_metallic_map = {
+		type = "scalar"
+		value = 1
+	}
+	use_normal_map = {
+		type = "scalar"
+		value = 1
+	}
+	use_roughness_map = {
+		type = "scalar"
+		value = 1
+	}
+} 

@@ -2,7 +2,7 @@ return {
 	mod_description = {
 		en = "Disc of Tzeentch description",
 	},
-	disc_interaction = {
+	mount_interaction = {
 		en = "Mount",
 		de = "Bestieg",
 	},

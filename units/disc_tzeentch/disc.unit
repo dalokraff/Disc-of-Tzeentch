@@ -1,5 +1,7 @@
+animation_state_machine = "units/disc_tzeentch/disc"
 materials = {
-   disc = "materials/disc"
+   disc = "materials/disc",
+   M_Eye = "materials/eye"
 }
 unit_template = "interaction_unit"
 data = {
@@ -10,7 +12,7 @@ data = {
         "ElevatorOutlineExtension"
     ]
     interaction_data = {
-        hud_description = "Disc of Tzeentch"
+        hud_description = "disc_name"
         interaction_length = 0
         interaction_type = "mount_interaction"
         interactor_animation = "interaction_start"
@@ -19,18 +21,28 @@ data = {
         apply_buff = "disc_buff"
 
     }
+    //in lieu of using a proper go_id each disc unit is given a unit_marker and when present, a rider on it, to sync the disc positions with it's players
     current_rider = "no_one"
     unit_marker = 99999
 }
 
 renderables = {
-   disc = {
-   	always_keep = false
-   	culling = "bounding_volume"
-   	generate_uv_unwrap = false
-   	occluder = false
-   	shadow_caster = true
-   	surface_queries = false
-   	viewport_visible = true
+    pDisc = {
+        always_keep = false
+        culling = "bounding_volume"
+        generate_uv_unwrap = false
+        occluder = false
+        shadow_caster = true
+        surface_queries = false
+        viewport_visible = true
+	}
+    pEye = {
+        always_keep = false
+        culling = "bounding_volume"
+        generate_uv_unwrap = false
+        occluder = false
+        shadow_caster = false
+        surface_queries = false
+        viewport_visible = true
 	}
 }  

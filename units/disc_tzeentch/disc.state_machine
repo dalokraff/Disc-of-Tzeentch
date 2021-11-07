@@ -2,6 +2,8 @@
 events = {
 	idle = {
 	}
+	interact = {
+	}
 	ragdoll = {
 	}
 }
@@ -11,7 +13,10 @@ layers = [
 		states = [
 			{
 				animations = [
-					"units/disc_tzeentch/anims/idle"
+					"units/disc_tzeentch/anims/ANIM_Disc_Idle",
+					"units/disc_tzeentch/anims/ANIM_Disc_Idle_Breaker_Suspicious",
+					"units/disc_tzeentch/anims/ANIM_Disc_Idle_Breaker_Worried",
+					"units/disc_tzeentch/anims/ANIM_Disc_Idle_Rare_Frantic"
 				]
 				loop_animation = true
 				name = "base/idle"
@@ -22,10 +27,51 @@ layers = [
 				transitions = [
 					{
 						blend_time = 0.2
-						event = "idle"
+						event = "interact"
 						mode = "direct"
 						on_beat = ""
+						to = "base/interact"
+					}
+					{
+						blend_time = 0.2
+						event = "death"
+						mode = "direct"
+						on_beat = ""
+						to = "base/death"
+					}
+				]
+				weights = [
+					"5.0",
+					"2.0",
+					"2.0",
+					"1.0"
+				]
+			}
+			{
+				animations = [
+					"units/disc_tzeentch/anims/ANIM_Disc_Idle_Rare_Frantic"
+				]
+				loop_animation = false
+				name = "base/interact"
+				randomization_type = "every_loop"
+				root_driving = "ignore"
+				speed = "1"
+				state_type = "regular"
+				transitions = [
+					{
+						blend_time = 0.2
+						event = "idle"
+						mode = "direct"
+						on_beat = "base/interact"
+						on = "base/interact"
 						to = "base/idle"
+					}
+					{
+						blend_time = 0.2
+						event = "interact"
+						mode = "direct"
+						on_beat = ""
+						to = "base/interact"
 					}
 					{
 						blend_time = 0.2

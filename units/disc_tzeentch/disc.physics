@@ -2,12 +2,12 @@ actors = [
 	{
 		enabled = true
 		mass = 1
-		name = "pCylinder1"
-		node = "pCylinder1"
+		name = "pColision"
+		node = "pColision"
 		shapes = [
 			{
 				material = "default"
-				shape = "pCylinder1"
+				shape = "pColision"
 				template = "default"
 				type = "convex_computed"
 			}

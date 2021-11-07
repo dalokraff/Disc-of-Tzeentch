@@ -7,27 +7,53 @@ end)
 
 --syncs the currently spawned in disc units with the host when a client hot joins
 mod:network_register("rpc_snyc_mounts", function(sender, list_mount, unitPos)
-    if mod.mounted_players ~= list_mount then 
+    --if mod.mounted_players ~= list_mount then
+        --mod:echo(list_mount) 
+        --mod:echo(unitPos) 
         local package_name = "units/disc_tzeentch/disc"
         local world = Managers.world:world("level_world")
         local material = "units/props/tzeentch/tzeentch_faction_01"
         local extension_init_data = {}
         local unit_spawner = Managers.state.unit_spawner
         local unit_template_name = "interaction_unit"
-        for _,v in pairs(list_mount) do 
-            local currentRider = v.rider --rider id
-            local unit_marker = unitPos[currentRider].unit_marker --unit marker
-            local unit_pos = Vector3(unitPos[currentRider].x, unitPos[currentRider].y, unitPos[currentRider].z)
-            local unit_rot = Quaternion.from_elements(unitPos[currentRider].x1, unitPos[currentRider].y1, unitPos[currentRider].z1, unitPos[currentRider].w1)
+        --mod:echo("vars set")
+        if list_mount["empty"] then
+            if list_mount["empty"]["empty"] == "empty" then
+                list_mount = {}
+            end
+        end
+        -- for _,v in pairs(list_mount) do 
+        --     local currentRider = v.rider --rider id
+        --     local unit_marker = unitPos[currentRider].unit_marker --unit marker
+        --     local unit_pos = Vector3(unitPos[currentRider].x, unitPos[currentRider].y, unitPos[currentRider].z)
+        --     local unit_rot = Quaternion.from_elements(unitPos[currentRider].x1, unitPos[currentRider].y1, unitPos[currentRider].z1, unitPos[currentRider].w1)
+
+        --     local unit, go_id = unit_spawner:spawn_network_unit(package_name, unit_template_name, extension_init_data, unit_pos, unit_rot, material)
+        --     Unit.set_material(unit, "disc", material)
+        --     Unit.set_data(unit, "current_rider", currentRider)
+        --     Unit.set_data(unit, "unit_marker", unit_marker)
+
+        --     table.insert(mod.mounted_players, v)
+        -- end
+        for _,j in pairs(unitPos) do
+            --mod:echo('table list')
+            --local currentRider = v.rider --rider id
+            local unit_marker = j.unit_marker --unit marker
+            local unit_pos = Vector3(j.x, j.y, j.z)
+            local unit_rot = Quaternion.from_elements(j.x1, j.y1, j.z1, j.w1)
 
             local unit, go_id = unit_spawner:spawn_network_unit(package_name, unit_template_name, extension_init_data, unit_pos, unit_rot, material)
             Unit.set_material(unit, "disc", material)
-            Unit.set_data(unit, "current_rider", currentRider)
             Unit.set_data(unit, "unit_marker", unit_marker)
-
-            table.insert(mod.mounted_players, v)
+            for _,v in pairs(list_mount) do 
+                if unitPos[v.rider].unit_marker == unit_marker then
+                    Unit.set_data(unit, "current_rider", v.rider)
+                    table.insert(mod.mounted_players, v)
+                end
+            end
         end
-    end
+        --mod:echo("sync")
+    --end
 
 end)
 
@@ -44,11 +70,12 @@ mod:network_register("rpc_spawn_mount", function(sender, posList, rotList, unit_
     
     local unit, go_id = unit_spawner:spawn_network_unit(package_name, unit_template_name, extension_init_data, unit_pos, unit_rot, material)
     Unit.set_material(unit, "disc", material)
+    --Unit.set_material(unit, "M_Eye", material) --new
     Unit.set_data(unit, "unit_marker", unit_mark)
     
-    mod:echo(Unit.get_data(unit, "unit_marker"))
-    mod:echo(go_id)
-    mod:echo(sender)
+    --mod:echo(Unit.get_data(unit, "unit_marker"))
+    --mod:echo(go_id)
+    --mod:echo(sender)
 end)
 
 --adds or removes a rider(player) when then mount or dismount (interact with) from the disc
@@ -56,8 +83,8 @@ mod:network_register("rpc_add_rider", function(sender, new_rider, mount_marker)
     local mount_table = {
         rider = new_rider
     }
-    mod:echo(new_rider)
-    mod:echo('------')
+    --mod:echo(new_rider)
+    --mod:echo('------')
     table.insert(mod.mounted_players, mount_table)
     local world = Managers.world:world("level_world")
     local list_of_mounts_in_world = World.units_by_resource(world, "units/disc_tzeentch/disc")
@@ -67,7 +94,7 @@ mod:network_register("rpc_add_rider", function(sender, new_rider, mount_marker)
         end
     end
     
-    mod:echo('------')
+    --mod:echo('------')
 end)
 
 mod:network_register("rpc_remove_rider", function(sender, removed_rider, mount_marker)
